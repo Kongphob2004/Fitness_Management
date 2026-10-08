@@ -3,6 +3,24 @@
 // ============================================================
 const $ = (s) => document.querySelector(s);
 async function api(url) { return (await fetch(url)).json(); }
+const reportColumnLabels = {
+  class_id: "รหัสคลาส",
+  class_name: "ชื่อคลาส",
+  booking_count: "จำนวนการจอง",
+
+  trainer_id: "รหัสเทรนเนอร์",
+  trainer_name: "ชื่อเทรนเนอร์",
+  total_bookings: "จำนวนผู้จอง",
+
+  equip_id: "รหัสอุปกรณ์",
+  equip_name: "ชื่ออุปกรณ์",
+  quantity_used: "จำนวนที่ใช้",
+
+  zone: "โซน/พื้นที่",
+  quantity: "จำนวนอุปกรณ์",
+
+  equipment_name: "ชื่ออุปกรณ์"
+};
 function fillTable(tableSel, statusSel, r) {
   const t = $(tableSel), st = $(statusSel);
   const thead = t.querySelector("thead"), tbody = t.querySelector("tbody");
@@ -12,7 +30,9 @@ function fillTable(tableSel, statusSel, r) {
   if (!rows.length) { st.className = "status"; st.textContent = "ไม่มีข้อมูล"; return; }
   st.textContent = "";
   const cols = Object.keys(rows[0]);
-  thead.innerHTML = "<tr>" + cols.map(c => "<th>" + c + "</th>").join("") + "</tr>";
+  thead.innerHTML = "<tr>" +
+  cols.map(c => "<th>" + (reportColumnLabels[c] || c) + "</th>").join("") +
+  "</tr>";
   tbody.innerHTML = rows.map(row => "<tr>" + cols.map(c => "<td>" + (row[c] ?? "—") + "</td>").join("") + "</tr>").join("");
 }
 async function loadSummary() {

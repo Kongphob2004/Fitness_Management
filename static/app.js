@@ -5,6 +5,71 @@
 // ★ ตัวอย่าง dropdown ที่อ่านข้อมูลจากฐานข้อมูล: ฟอร์ม "การจอง" ช่อง class_id
 //   แสดง name แต่ส่งค่าเป็น class_id (อ่านรายการจาก /api/classes)
 //   ช่อง FK อื่น ๆ ทำแบบเดียวกันได้ — เปลี่ยน "type": "number" เป็น select + optionsFrom
+const columnLabels = {
+  member_id: "รหัสสมาชิก",
+  name: "ชื่อสมาชิก",
+  gender: "เพศ",
+  phone: "เบอร์โทรศัพท์",
+  join_date: "วันที่สมัครสมาชิก",
+  package_type: "แพ็กเกจสมาชิก",
+
+  trainer_id: "รหัสเทรนเนอร์",
+  specialty: "ความเชี่ยวชาญ",
+
+  class_id: "รหัสคลาส",
+  room: "ห้องเรียน",
+  schedule_time: "วันและเวลาเรียน",
+  capacity: "จำนวนที่รับได้",
+  seats_left: "จำนวนที่เหลือ",
+
+  booking_id: "รหัสการจอง",
+  booking_date: "วันที่จอง",
+  status: "สถานะ",
+
+  equip_id: "รหัสอุปกรณ์",
+  zone: "โซน/พื้นที่",
+  quantity: "จำนวนอุปกรณ์"
+};
+
+const entityColumnLabels = {
+  members: {
+    name: "ชื่อสมาชิก"
+  },
+
+  trainers: {
+    name: "ชื่อเทรนเนอร์"
+  },
+
+  classes: {
+    name: "ชื่อคลาส"
+  },
+
+  bookings: {
+    name: "ชื่อสมาชิก"
+  },
+
+  equipment: {
+    name: "ชื่ออุปกรณ์"
+  },
+
+  bookings: {
+    status: "สถานะการจอง"
+  },
+
+  equipment: {
+    status: "สถานะอุปกรณ์"
+  }
+};
+
+const statusLabels = {
+  booked: "จองแล้ว",
+  cancelled: "ยกเลิกแล้ว",
+
+  // สถานะอุปกรณ์
+  available: "พร้อมใช้งาน",
+  damaged: "ชำรุด"
+};
+
 const ENTITIES = {
   "members": {
     "label": "สมาชิก",
@@ -45,6 +110,11 @@ const ENTITIES = {
         "type": "text"
       },
       {
+        "key": "phone",
+        "label": "เบอร์โทรศัพท์",
+        "type": "text"
+      },
+      {
         "key": "gender",
         "label": "เพศ",
         "type": "select",
@@ -70,6 +140,42 @@ const ENTITIES = {
       }
     ]
   },
+  "trainers": {
+  "label": "เทรนเนอร์",
+  "api": "/api/trainers",
+  "idKey": "trainer_id",
+
+  "search": [
+    {
+      "key": "name",
+      "label": "ชื่อเทรนเนอร์",
+      "type": "text"
+    },
+    {
+      "key": "specialty",
+      "label": "ความเชี่ยวชาญ",
+      "type": "text"
+    }
+  ],
+
+  "form": [
+    {
+      "key": "name",
+      "label": "ชื่อเทรนเนอร์",
+      "type": "text"
+    },
+    {
+      "key": "phone",
+      "label": "เบอร์โทรศัพท์",
+      "type": "text"
+    },
+    {
+      "key": "specialty",
+      "label": "ความเชี่ยวชาญ",
+      "type": "text"
+    }
+  ]
+},
   "classes": {
     "label": "คลาสเรียน",
     "api": "/api/classes",
@@ -95,7 +201,12 @@ const ENTITIES = {
       {
         "key": "trainer_id",
         "label": "รหัสเทรนเนอร์",
-        "type": "number"
+        "type": "select",
+        "optionsFrom" : {
+          "api" : "/api/trainers",
+          "value" : "trainer_id",
+          "label" : "trainer_id"
+        }
       },
       {
         "key": "room",
@@ -114,6 +225,76 @@ const ENTITIES = {
       }
     ]
   },
+  "equipment": {
+  "label": "อุปกรณ์",
+  "api": "/api/equipment",
+  "idKey": "equip_id",
+
+  "search": [
+    {
+      "key": "name",
+      "label": "ชื่ออุปกรณ์",
+      "type": "text"
+    },
+    {
+      "key": "zone",
+      "label": "โซน",
+      "type": "text"
+    },
+    {
+      "key": "status",
+      "label": "สถานะ",
+      "type": "select",
+      "options": [
+        {
+          "value": "",
+          "label": "ทั้งหมด"
+        },
+        {
+          "value": "available",
+          "label": "พร้อมใช้งาน"
+        },
+        {
+          "value": "damaged",
+          "label": "ชำรุด"
+        }
+      ]
+    }
+  ],
+
+  "form": [
+    {
+      "key": "name",
+      "label": "ชื่ออุปกรณ์",
+      "type": "text"
+    },
+    {
+      "key": "zone",
+      "label": "โซน",
+      "type": "text"
+    },
+    {
+      "key": "quantity",
+      "label": "จำนวนทั้งหมด",
+      "type": "number"
+    },
+    {
+      "key": "status",
+      "label": "สถานะ",
+      "type": "select",
+      "options": [
+        {
+          "value": "available",
+          "label": "พร้อมใช้งาน"
+        },
+        {
+          "value": "damaged",
+          "label": "ชำรุด"
+        }
+      ]
+    }
+  ]
+},
   "bookings": {
     "label": "การจอง",
     "api": "/api/bookings",
@@ -135,8 +316,8 @@ const ENTITIES = {
         "type": "select",
         "options": [
           "",
-          "booked",
-          "cancelled"
+          {"value": "booked", "label": "จองแล้ว"},
+          {"value": "cancelled", "label": "ยกเลิกแล้ว"},
         ]
       }
     ],
@@ -157,7 +338,7 @@ const ENTITIES = {
         }
       },
       {
-        "key": "book_date",
+        "key": "booking_date",
         "label": "วันที่จอง",
         "type": "date"
       },
@@ -166,12 +347,13 @@ const ENTITIES = {
         "label": "สถานะ",
         "type": "select",
         "options": [
-          "booked",
-          "cancelled"
+          {"value": "booked", "label": "จองแล้ว"},
+          {"value": "cancelled", "label": "ยกเลิกแล้ว"},
         ]
       }
     ]
   }
+  
 };
 
 let current = Object.keys(ENTITIES)[0];
@@ -227,13 +409,26 @@ function renderTable(r) {
   if (rows.length === 0) { setStatus(st, "ไม่พบข้อมูล"); return; }
   setStatus(st, "พบ " + rows.length + " รายการ");
   const cols = Object.keys(rows[0]);
-  head.innerHTML = cols.map(c => "<th>" + c + "</th>").join("") + "<th>จัดการ</th>";
+  head.innerHTML = cols.map(c => {
+  const label = entityColumnLabels[current]?.[c] || columnLabels[c] || c;
+  return "<th>" + label + "</th>";
+}).join("") + "<th>จัดการ</th>";
   body.innerHTML = rows.map(row => {
-    const id = row[ENTITIES[current].idKey];
-    return "<tr>" + cols.map(c => "<td>" + (row[c] ?? "—") + "</td>").join("") +
-      '<td><button class="btn sm" onclick="editRow(' + id + ')">แก้ไข</button> ' +
-      '<button class="btn sm del" onclick="deleteRow(' + id + ')">ลบ</button></td></tr>';
-  }).join("");
+  const id = row[ENTITIES[current].idKey];
+
+  return "<tr>" + cols.map(c => {
+    let value = row[c] ?? "—";
+
+    // แปลงสถานะการจองเป็นภาษาไทย
+    if (c === "status") {
+      value = statusLabels[value] || value;
+    }
+
+    return "<td>" + value + "</td>";
+  }).join("") +
+    '<td><button class="btn sm" onclick="editRow(' + id + ')">แก้ไข</button> ' +
+    '<button class="btn sm del" onclick="deleteRow(' + id + ')">ลบ</button></td></tr>';
+}).join("");
 }
 async function openForm(title, data = {}) {
   await loadOptions(formFields(), false);

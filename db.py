@@ -79,11 +79,12 @@ def get_member(member_id):
 def create_member(data):
     """เพิ่ม สมาชิก ใหม่"""
     sql = """
-        INSERT INTO member (name, gender, join_date, package_type)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO member (name, phone, gender, join_date, package_type)
+        VALUES (%s, %s, %s, %s, %s)
     """
     params = (
         data["name"],
+        data["phone"],
         data["gender"],
         data["join_date"],
         data["package_type"]
@@ -96,6 +97,7 @@ def update_member(member_id, data):
     sql = """
         UPDATE member
         SET name = %s,
+            phone = %s,
             gender = %s,
             join_date = %s,
             package_type = %s
@@ -103,6 +105,7 @@ def update_member(member_id, data):
     """
     params = (
         data["name"],
+        data["phone"],
         data["gender"],
         data["join_date"],
         data["package_type"],
@@ -118,6 +121,158 @@ def delete_member(member_id):
         (member_id,)
     )
 
+# ---------- เทรนเนอร์ (trainer) ----------
+
+def search_trainers(filters):
+    """ค้นหา เทรนเนอร์ ตามเงื่อนไข (name, specialty)"""
+    sql = "SELECT * FROM trainer WHERE 1=1"
+    params = []
+
+    if filters.get("name"):
+        sql += " AND name LIKE %s"
+        params.append("%" + filters["name"] + "%")
+
+    if filters.get("specialty"):
+        sql += " AND specialty LIKE %s"
+        params.append("%" + filters["specialty"] + "%")
+
+    sql += " ORDER BY trainer_id"
+    return run_query(sql, params)
+
+
+def get_trainer(trainer_id):
+    """ดึง เทรนเนอร์ 1 รายการตาม trainer_id"""
+    rows = run_query(
+        "SELECT * FROM trainer WHERE trainer_id = %s",
+        (trainer_id,)
+    )
+    return rows[0] if rows else None
+
+
+def create_trainer(data):
+    """เพิ่ม เทรนเนอร์ ใหม่"""
+    sql = """
+        INSERT INTO trainer
+            (name, phone, specialty)
+        VALUES
+            (%s, %s, %s)
+    """
+
+    params = (
+        data["name"],
+        data["phone"],
+        data["specialty"]
+    )
+
+    return run_command(sql, params)
+
+
+def update_trainer(trainer_id, data):
+    """แก้ไข เทรนเนอร์ ตาม trainer_id"""
+    sql = """
+        UPDATE trainer
+        SET name = %s,
+            phone = %s,
+            specialty = %s
+        WHERE trainer_id = %s
+    """
+
+    params = (
+        data["name"],
+        data["phone"],
+        data["specialty"],
+        trainer_id
+    )
+
+    return run_command(sql, params)
+
+
+def delete_trainer(trainer_id):
+    """ลบ เทรนเนอร์ ตาม trainer_id"""
+    return run_command(
+        "DELETE FROM trainer WHERE trainer_id = %s",
+        (trainer_id,)
+    )
+
+# ---------- อุปกรณ์ (equipment) ----------
+
+def search_equipment(filters):
+    """ค้นหา อุปกรณ์ ตามเงื่อนไข (name, zone, status)"""
+    sql = "SELECT * FROM equipment WHERE 1=1"
+    params = []
+
+    if filters.get("name"):
+        sql += " AND name LIKE %s"
+        params.append("%" + filters["name"] + "%")
+
+    if filters.get("zone"):
+        sql += " AND zone LIKE %s"
+        params.append("%" + filters["zone"] + "%")
+
+    if filters.get("status"):
+        sql += " AND status = %s"
+        params.append(filters["status"])
+
+    sql += " ORDER BY equip_id"
+    return run_query(sql, params)
+
+
+def get_equipment(equip_id):
+    """ดึง อุปกรณ์ 1 รายการตาม equip_id"""
+    rows = run_query(
+        "SELECT * FROM equipment WHERE equip_id = %s",
+        (equip_id,)
+    )
+    return rows[0] if rows else None
+
+
+def create_equipment(data):
+    """เพิ่ม อุปกรณ์ ใหม่"""
+    sql = """
+        INSERT INTO equipment
+            (name, zone, quantity, status)
+        VALUES
+            (%s, %s, %s, %s)
+    """
+
+    params = (
+        data["name"],
+        data["zone"],
+        data["quantity"],
+        data["status"]
+    )
+
+    return run_command(sql, params)
+
+
+def update_equipment(equip_id, data):
+    """แก้ไข อุปกรณ์ ตาม equip_id"""
+    sql = """
+        UPDATE equipment
+        SET name = %s,
+            zone = %s,
+            quantity = %s,
+            status = %s
+        WHERE equip_id = %s
+    """
+
+    params = (
+        data["name"],
+        data["zone"],
+        data["quantity"],
+        data["status"],
+        equip_id
+    )
+
+    return run_command(sql, params)
+
+
+def delete_equipment(equip_id):
+    """ลบ อุปกรณ์ ตาม equip_id"""
+    return run_command(
+        "DELETE FROM equipment WHERE equip_id = %s",
+        (equip_id,)
+    )
 
 # ---------- คลาสเรียน (gym_class) ----------
 def search_classes(filters):
@@ -308,7 +463,7 @@ def create_booking(data):
     params = (
         data["member_id"],
         data["class_id"],
-        data["book_date"],
+        data["booking_date"],
         data["status"]
     )
     return run_command(sql, params)
@@ -346,7 +501,7 @@ def update_booking(booking_id, data):
     params = (
         data["member_id"],
         data["class_id"],
-        data["book_date"],
+        data["booking_date"],
         data["status"],
         booking_id
     )
