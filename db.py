@@ -318,6 +318,15 @@ def get_class(class_id):
     )
     return rows[0] if rows else None
 
+def get_class_rooms():
+    sql = """
+        SELECT DISTINCT TRIM(room) AS room
+        FROM gym_class
+        WHERE room IS NOT NULL
+          AND TRIM(room) <> ''
+        ORDER BY room
+    """
+    return run_query(sql)
 
 def create_class(data):
     """เพิ่ม คลาสเรียน ใหม่"""
@@ -537,6 +546,10 @@ def search_member_checkins(filters):
         sql += " AND mc.member_id = %s"
         params.append(filters["member_id"])
 
+    if filters.get("member_name"):
+        sql += " AND m.name LIKE %s"
+        params.append("%" + filters["member_name"].strip() + "%")
+
     sql += " ORDER BY mc.checkin_time DESC"
 
     return run_query(sql, params)
@@ -724,6 +737,26 @@ def report_top_member_checkins():
         GROUP BY m.member_id, m.name
         ORDER BY total_checkins DESC, m.member_id ASC
         LIMIT 10
+    """
+    return run_query(sql)
+
+def get_trainer_specialties():
+    sql = """
+        SELECT DISTINCT TRIM(specialty) AS specialty
+        FROM trainer
+        WHERE specialty IS NOT NULL
+          AND TRIM(specialty) <> ''
+        ORDER BY specialty
+    """
+    return run_query(sql)
+
+def get_equipment_zones():
+    sql = """
+        SELECT DISTINCT TRIM(zone) AS zone
+        FROM equipment
+        WHERE zone IS NOT NULL
+          AND TRIM(zone) <> ''
+        ORDER BY zone
     """
     return run_query(sql)
 

@@ -159,7 +159,12 @@ const ENTITIES = {
     {
       "key": "specialty",
       "label": "ความเชี่ยวชาญ",
-      "type": "text"
+      "type": "select",
+      "optionsFrom": {
+        "api": "/api/trainers/specialties",
+        "value": "specialty",
+        "label": "specialty"
+      }
     }
   ],
 
@@ -194,8 +199,13 @@ const ENTITIES = {
       {
         "key": "room",
         "label": "ห้อง",
-        "type": "text"
-      }
+        "type": "select",
+          "optionsFrom": {
+            "api": "/api/classes/rooms",
+            "value": "room",
+            "label": "room"
+          }
+      },
     ],
     "form": [
       {
@@ -226,7 +236,7 @@ const ENTITIES = {
       {
         "key": "schedule_time",
         "label": "เวลา",
-        "type": "text"
+        "type": "datetime-local"
       }
     ]
   },
@@ -244,7 +254,12 @@ const ENTITIES = {
     {
       "key": "zone",
       "label": "โซน",
-      "type": "text"
+      "type": "select",
+      "optionsFrom": {
+        "api": "/api/equipment/zones",
+        "value": "zone",
+        "label": "zone"
+      }
     },
     {
       "key": "status",
@@ -366,14 +381,9 @@ const ENTITIES = {
 
     "search": [
       {
-        "key": "member_id",
+        "key": "member_name",
         "label": "สมาชิก",
-        "type": "select",
-        "optionsFrom": {
-          "api": "/api/members",
-          "value": "member_id",
-          "label": "name"
-        }
+        "type": "text"
       }
     ],
 
@@ -520,3 +530,29 @@ $("#btnSave").onclick = save;
 $("#btnCancel").onclick = () => $("#modal").classList.add("hidden");
 buildSearch();
 setStatus($("#status"), 'กด "ค้นหา" เพื่อแสดงข้อมูล');
+
+// Real-time search: ประวัติการเข้าใช้ Fitness
+document.addEventListener("input", function (event) {
+  const target = event.target;
+
+  if (
+    !target ||
+    !target.id ||
+    !target.id.includes("member_name")
+  ) {
+    return;
+  }
+
+  // ค้นหาเฉพาะเมื่ออยู่ในแท็บประวัติการเข้าใช้
+  if (typeof current === "undefined" ||
+      current !== "member_checkins") {
+    return;
+  }
+
+  // ใช้ระบบค้นหาเดิมเมื่อพิมพ์
+  const searchButton = document.querySelector("#btnSearch");
+
+  if (searchButton) {
+    searchButton.click();
+  }
+});
