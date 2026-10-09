@@ -19,7 +19,11 @@ const reportColumnLabels = {
   zone: "โซน/พื้นที่",
   quantity: "จำนวนอุปกรณ์",
 
-  equipment_name: "ชื่ออุปกรณ์"
+  equipment_name: "ชื่ออุปกรณ์",
+
+  member_id: "รหัสสมาชิก",
+  member_name: "ชื่อสมาชิก",
+  total_checkins: "จำนวนครั้งเข้าใช้",
 };
 function fillTable(tableSel, statusSel, r) {
   const t = $(tableSel), st = $(statusSel);

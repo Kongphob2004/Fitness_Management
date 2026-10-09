@@ -189,5 +189,38 @@ def equipment_update(_id):
 def equipment_delete(_id):
     return safe(db.delete_equipment, _id)
 
+# ---------- ประวัติการเข้าใช้ Fitness ----------
+
+@app.route("/api/member-checkins", methods=["GET"])
+def member_checkins_list():
+    filters = {
+        k: v for k, v in request.args.items() if v
+    }
+    return safe(db.search_member_checkins, filters)
+
+
+@app.route("/api/member-checkins/<int:_id>", methods=["GET"])
+def member_checkin_get(_id):
+    return safe(db.get_member_checkin, _id)
+
+
+@app.route("/api/member-checkins", methods=["POST"])
+def member_checkin_create():
+    return safe(db.create_member_checkin, request.json or {})
+
+
+@app.route("/api/member-checkins/<int:_id>", methods=["PUT"])
+def member_checkin_update(_id):
+    return safe(
+        db.update_member_checkin,
+        _id,
+        request.json or {}
+    )
+
+
+@app.route("/api/member-checkins/<int:_id>", methods=["DELETE"])
+def member_checkin_delete(_id):
+    return safe(db.delete_member_checkin, _id)
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
