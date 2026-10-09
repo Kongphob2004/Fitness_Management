@@ -222,5 +222,17 @@ def member_checkin_update(_id):
 def member_checkin_delete(_id):
     return safe(db.delete_member_checkin, _id)
 
+@app.route("/api/trainers/specialties", methods=["GET"])
+def trainer_specialties():
+    return safe(db.get_trainer_specialties)
+
+@app.route("/api/equipment/zones", methods=["GET"])
+def equipment_zones():
+    return safe(db.get_equipment_zones)
+
+@app.route("/api/classes/rooms", methods=["GET"])
+def class_rooms():
+    return safe(db.get_class_rooms)
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
