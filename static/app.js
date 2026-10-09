@@ -28,7 +28,12 @@ const columnLabels = {
 
   equip_id: "รหัสอุปกรณ์",
   zone: "โซน/พื้นที่",
-  quantity: "จำนวนอุปกรณ์"
+  quantity: "จำนวนอุปกรณ์",
+
+  checkin_id: "รหัส Check-in",
+  member_name: "ชื่อสมาชิก",
+  checkin_time: "เวลาเข้าใช้",
+  checkout_time: "เวลาออก"
 };
 
 const entityColumnLabels = {
@@ -352,6 +357,48 @@ const ENTITIES = {
         ]
       }
     ]
+  },
+
+    "member_checkins": {
+    "label": "ประวัติการเข้าใช้",
+    "api": "/api/member-checkins",
+    "idKey": "checkin_id",
+
+    "search": [
+      {
+        "key": "member_id",
+        "label": "สมาชิก",
+        "type": "select",
+        "optionsFrom": {
+          "api": "/api/members",
+          "value": "member_id",
+          "label": "name"
+        }
+      }
+    ],
+
+    "form": [
+      {
+        "key": "member_id",
+        "label": "สมาชิก",
+        "type": "select",
+        "optionsFrom": {
+          "api": "/api/members",
+          "value": "member_id",
+          "label": "name"
+        }
+      },
+      {
+        "key": "checkin_time",
+        "label": "เวลาเข้าใช้",
+        "type": "datetime-local"
+      },
+      {
+        "key": "checkout_time",
+        "label": "เวลาออก (เว้นว่างหากยังไม่ออก)",
+        "type": "datetime-local"
+      }
+    ]
   }
   
 };
@@ -363,6 +410,10 @@ function setStatus(el, msg, cls = "") { el.className = "status " + cls; el.textC
 async function api(url, opts) { const res = await fetch(url, opts); return res.json(); }
 
 function fieldHtml(f, prefix, value = "") {
+  // แปลงวันที่และเวลาให้แสดงในช่อง datetime-local
+  if (f.type === "datetime-local" && value) {
+    value = String(value).replace(" ", "T").slice(0, 16);
+  }
   if (f.type === "heading") return '<div class="form-section">' + f.label + '</div>';
   let input;
   if (f.type === "select") {

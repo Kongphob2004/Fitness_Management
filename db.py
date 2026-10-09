@@ -2,6 +2,7 @@
 #  db.py — ชั้นติดต่อฐานข้อมูล
 #  เขียน SQL ในไฟล์นี้ — ใช้ %s เป็น placeholder เสมอ
 # ============================================================
+from datetime import datetime
 
 import mysql.connector
 import config
@@ -515,6 +516,105 @@ def delete_booking(booking_id):
         (booking_id,)
     )
 
+# ---------- MEMBER CHECKIN ----------
+
+def search_member_checkins(filters):
+    sql = """
+        SELECT
+            mc.checkin_id,
+            mc.member_id,
+            m.name AS member_name,
+            mc.checkin_time,
+            mc.checkout_time
+        FROM member_checkin mc
+        INNER JOIN member m
+            ON mc.member_id = m.member_id
+        WHERE 1=1
+    """
+    params = []
+
+    if filters.get("member_id"):
+        sql += " AND mc.member_id = %s"
+        params.append(filters["member_id"])
+
+    sql += " ORDER BY mc.checkin_time DESC"
+
+    return run_query(sql, params)
+
+
+def get_member_checkin(checkin_id):
+    rows = run_query(
+        """
+        SELECT checkin_id, member_id,
+               checkin_time, checkout_time
+        FROM member_checkin
+        WHERE checkin_id = %s
+        """,
+        (checkin_id,)
+    )
+    return rows[0] if rows else None
+
+
+def create_member_checkin(data):
+    member_id = data.get("member_id")
+    checkin_time = blank_to_none(data.get("checkin_time"))
+    checkout_time = blank_to_none(data.get("checkout_time"))
+
+    if not member_id:
+        raise ValueError("กรุณาเลือกสมาชิก")
+
+    if not checkin_time:
+        checkin_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    checkin_time = str(checkin_time).replace("T", " ")
+
+    if checkout_time:
+        checkout_time = str(checkout_time).replace("T", " ")
+        if checkout_time < checkin_time:
+            raise ValueError("เวลาออกต้องไม่ก่อนเวลาเข้า")
+
+    return run_command(
+        """
+        INSERT INTO member_checkin
+            (member_id, checkin_time, checkout_time)
+        VALUES (%s, %s, %s)
+        """,
+        (member_id, checkin_time, checkout_time)
+    )
+
+
+def update_member_checkin(checkin_id, data):
+    member_id = data.get("member_id")
+    checkin_time = blank_to_none(data.get("checkin_time"))
+    checkout_time = blank_to_none(data.get("checkout_time"))
+
+    if not member_id or not checkin_time:
+        raise ValueError("กรุณาเลือกสมาชิกและระบุเวลาเข้าใช้")
+
+    checkin_time = str(checkin_time).replace("T", " ")
+
+    if checkout_time:
+        checkout_time = str(checkout_time).replace("T", " ")
+        if checkout_time < checkin_time:
+            raise ValueError("เวลาออกต้องไม่ก่อนเวลาเข้า")
+
+    return run_command(
+        """
+        UPDATE member_checkin
+        SET member_id = %s,
+            checkin_time = %s,
+            checkout_time = %s
+        WHERE checkin_id = %s
+        """,
+        (member_id, checkin_time, checkout_time, checkin_id)
+    )
+
+
+def delete_member_checkin(checkin_id):
+    return run_command(
+        "DELETE FROM member_checkin WHERE checkin_id = %s",
+        (checkin_id,)
+    )
 
 # ============================================================
 # REPORT
@@ -611,6 +711,21 @@ def report_class_equipment():
     """
     return run_query(sql)
 
+def report_top_member_checkins():
+    """สมาชิกที่เข้าใช้ Fitness บ่อยที่สุด"""
+    sql = """
+        SELECT
+            m.member_id,
+            m.name AS member_name,
+            COUNT(mc.checkin_id) AS total_checkins
+        FROM member_checkin mc
+        INNER JOIN member m
+            ON mc.member_id = m.member_id
+        GROUP BY m.member_id, m.name
+        ORDER BY total_checkins DESC, m.member_id ASC
+        LIMIT 10
+    """
+    return run_query(sql)
 
 # ============================================================
 #  รายการรายงานที่แสดงบนหน้า /report
@@ -619,4 +734,5 @@ REPORTS = [
     ("popular-classes", "📈 คลาสยอดนิยม (Most Booked)", report_popular_classes),
     ("top-trainers", "🏅 เทรนเนอร์ที่มีผู้จองมากกว่าค่าเฉลี่ย (Above Average)", report_trainers_above_avg),
     ("class-equipment", "🧰 อุปกรณ์ที่ใช้ในแต่ละคลาส (Join 3 Tables)", report_class_equipment),
+    ("top-member-checkins","🏋️ สมาชิกที่เข้าใช้ Fitness บ่อยที่สุด",report_top_member_checkins),
 ]
